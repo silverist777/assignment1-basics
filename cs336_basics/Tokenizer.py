@@ -1,6 +1,7 @@
 import regex as re
 from collections.abc import Iterable, Iterator
 import json
+
 class Tokenizer():
 
     def __init__(self,vocab,merges,special_tokens = None):

@@ -123,10 +123,12 @@ TODO: count most freq pairs->merge pairs-> update vocab
 
     return initial_vocab,merges
 
-def count_pairs(counts: Counter, encode_piece: list[bytes]):
-    for i in range(len(encode_piece)- 1):
-        counts.update([(encode_piece[i],encode_piece[i+1])])
-        
+def count_pairs(encode_piece: list[bytes]):
+    local_counts = Counter()
+    for i in range(len(encode_piece)-1):
+        local_counts[(encode_piece[i],encode_piece[i+1])] += 1
+    return local_counts
+
 def merge_pairs(word:list[bytes],merge_pair):
     a,b = merge_pair
     i = 0
