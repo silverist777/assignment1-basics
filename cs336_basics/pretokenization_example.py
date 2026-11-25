@@ -41,7 +41,8 @@ def find_chunk_boundaries(
             # Find the special token in the mini chunk
             found_at = mini_chunk.find(split_special_token)
             if found_at != -1:
-                chunk_boundaries[bi] = initial_position + found_at
+                # update the boundary as the position of special token
+                chunk_boundaries[bi] = initial_position + found_at 
                 break
             initial_position += mini_chunk_size
 
