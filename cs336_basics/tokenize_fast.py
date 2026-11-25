@@ -59,28 +59,29 @@ def train_bpe(input_path:str, vocab_size: int, special_tokens: list[str]):
 
 
     """
-    most_freq_pair = counts.most_common(1)[0]
+    
 
 # merge the pair
 
 # check lexicographically greater pair logic
     while len(initial_vocab) < vocab_size and len(counts.most_common()) != 0:
-        ranked = counts.most_common()
-        possible_equal = 0
-        freq = ranked[possible_equal][1]
-        most_freq_pair = (ranked[possible_equal][0],freq)
-        while possible_equal < len(counts.most_common()) - 1 and ranked[possible_equal][1] == ranked[possible_equal+1][1] :
-            freq = ranked[possible_equal][1]
-            most_freq_pair = (max(most_freq_pair[0],max(ranked[possible_equal][0],ranked[possible_equal+1][0])),freq)
-            possible_equal += 1
+        most_freq_pair,most_freq = counts.most_common(1)[0]
+        for i in range(1,(len(counts)-1)):
+            max_index = 1
+            
+            next_pair, next_freq = counts.most_common(i+1)[i]
+            if most_freq == next_freq:
+                most_freq_pair = max(most_freq_pair,next_pair)
+                i += 1
+            else:
+                break
 
         if len(initial_vocab) >= vocab_size:
             return initial_vocab,merges
-        print("ranked:", ranked[:3])
-        print("most_freq_pair:", most_freq_pair)
-        print("counts keys:", list(counts.keys())[:3])
-        merge_token = most_freq_pair[0][0] + most_freq_pair[0][1]
-        merge_pair = (most_freq_pair[0][0],most_freq_pair[0][1])
+        
+
+        merge_token = most_freq_pair[0] + most_freq_pair[1]
+        merge_pair = (most_freq_pair[0],most_freq_pair[1])
 
         affect_ids = pair_ind[merge_pair].copy()
         for word_id in affect_ids:
@@ -91,10 +92,10 @@ def train_bpe(input_path:str, vocab_size: int, special_tokens: list[str]):
                 pair_ind[pair].remove(word_id)
 
             
-            word_sequence[word_id] = (merge_pairs(word_sequence[word_id], merge_pair),word_sequence[word_id][1])
+            word_sequence[word_id] = (merge_pairs(word_sequence[word_id][0], merge_pair),word_sequence[word_id][1])
             pair_count = count_pairs(word_sequence[word_id][0])
             for pair, pair_freq in pair_count.items():
-                pair_ind[pair].add(seq_id)
+                pair_ind[pair].add(word_id)
                 counts[pair] += freq * pair_freq
             
 
@@ -102,14 +103,11 @@ def train_bpe(input_path:str, vocab_size: int, special_tokens: list[str]):
 
         # update merges and vocab
 
-        merges.append((most_freq_pair[0][0],most_freq_pair[0][1]))
+        merges.append((most_freq_pair[0],most_freq_pair[1]))
         initial_vocab[id] = merge_token
         id +=1
 
-    print("best_pair:", merge_pair)
-    print("affected_ids:", affect_ids)
-    print("counts:", counts)
-    print("pair_ind:", pair_ind)
+ 
 
     return initial_vocab, merges
 
